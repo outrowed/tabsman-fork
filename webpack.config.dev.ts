@@ -2,18 +2,31 @@
  * Released under the MIT license.
  * see https://opensource.org/licenses/MIT */
 
-const {
-  getHTMLPlugins,
-  getOutput,
-  getCopyPlugins,
-  getFirefoxCopyPlugins,
-  getMiniCssExtractPlugin,
-  getBufferPlugin,
-  getEntry
-} = require("./webpack.utils");
-const path = require("path");
-const config = require("./config.json");
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+import { getHTMLPlugins, getOutput, getCopyPlugins, getFirefoxCopyPlugins, getMiniCssExtractPlugin, getBufferPlugin, getEntry } from "./webpack.utils.js";
+import path from "path";
+import config from "./config.json" with { type: "json" };
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+
+const isDev = true;
+const getSwcOptions = (isTypeScript: boolean) => ({
+  jsc: {
+    parser: isTypeScript
+      ? { syntax: "typescript", tsx: true }
+      : { syntax: "ecmascript", jsx: true },
+    transform: {
+      react: {
+        runtime: "classic",
+        development: isDev
+      }
+    }
+  },
+  env: {
+    targets: {
+      firefox: "57"
+    }
+  },
+  sourceMaps: isDev
+});
 
 const generalConfig = {
   mode: "development",
@@ -22,18 +35,27 @@ const generalConfig = {
     alias: {
       src: path.resolve(__dirname, "src/")
     },
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
     fallback: {
-      "url": require.resolve("url/")
+      "url": path.resolve("url/")
     }
   },
   module: {
     rules: [
       {
-        loader: "babel-loader",
+        test: /\.tsx?$/,
         exclude: /node_modules/,
-        test: /\.(js|jsx)$/,
-        resolve: {
-          extensions: [".js", ".jsx"]
+        use: {
+          loader: "swc-loader",
+          options: getSwcOptions(true)
+        }
+      },
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "swc-loader",
+          options: getSwcOptions(false)
         }
       },
       {

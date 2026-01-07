@@ -2,8 +2,8 @@
   "name": "tab-session-manager",
   "version": "0.0.0",
   "engines": {
-    "node": "18.19.1",
-    "npm": "10.2.4"
+    "node": ">=25",
+    "pnpm": ">=10"
   },
   "dependencies": {
     "browser-image-compression": "^1.0.14",
@@ -27,30 +27,28 @@
     "webextension-polyfill": "^0.7.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.9.0",
-    "@babel/plugin-proposal-optional-chaining": "^7.10.3",
-    "@babel/plugin-syntax-jsx": "^7.8.3",
-    "@babel/plugin-transform-class-properties": "^7.25.9",
-    "@babel/preset-env": "^7.9.0",
-    "@babel/preset-react": "^7.9.4",
     "@svgr/webpack": "^8.1.0",
+    "@swc/core": "^1.15.8",
+    "@types/node": "^25.0.3",
     "babel-loader": "^8.1.0",
     "buffer": "^6.0.3",
-    "clean-webpack-plugin": "^0.1.19",
-    "copy-webpack-plugin": "^9.0.1",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.3",
-    "mini-css-extract-plugin": "^1.6.0",
+    "mini-css-extract-plugin": "^2.9.4",
     "sass": "^1.86.0",
     "sass-loader": "^14.2.1",
-    "webpack": "^5.88.2",
-    "webpack-cli": "^4.8.0",
+    "swc-loader": "^0.2.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1",
     "zip-webpack-plugin": "^4.0.1"
   },
   "scripts": {
-    "watch-dev": "webpack --config webpack.config.dev.js --watch",
-    "build": "webpack --config webpack.config.dist.js"
+    "watch-dev": "webpack --config webpack.config.dev.ts --watch",
+    "build": "webpack --config webpack.config.dist.ts"
   },
   "repository": {
     "type": "git",

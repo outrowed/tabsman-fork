@@ -3,8 +3,8 @@
  * Released under the MIT license.
  * see https://opensource.org/licenses/MIT */
 
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const {
+import CopyWebpackPlugin from "copy-webpack-plugin";
+import {
   getHTMLPlugins,
   getOutput,
   getCopyPlugins,
@@ -13,33 +13,66 @@ const {
   getMiniCssExtractPlugin,
   getBufferPlugin,
   getEntry
-} = require("./webpack.utils");
-const path = require("path");
-const config = require("./config.json");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+} from "./webpack.utils.js";
+import path from "path";
+import config from "./config.json" with { type: "json" };
+import { CleanWebpackPlugin} from "clean-webpack-plugin";
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-const extVersion = require("./src/manifest.json").version;
-const ffExtVersion = require("./src/manifest-ff.json").version;
+const isDev = false;
+const getSwcOptions = (isTypeScript: boolean) => ({
+  jsc: {
+    parser: isTypeScript
+      ? { syntax: "typescript", tsx: true }
+      : { syntax: "ecmascript", jsx: true },
+    transform: {
+      react: {
+        runtime: "classic",
+        development: isDev
+      }
+    }
+  },
+  env: {
+    targets: {
+      firefox: "57"
+    }
+  },
+  sourceMaps: isDev
+});
+
+import manifest from "./src/manifest.json" with { type: "json" };
+import manifestFirefox from "./src/manifest-ff.json" with { type: "json" };
+
+const extVersion = manifest.version;
+const ffExtVersion = manifestFirefox.version;
 
 const generalConfig = {
   mode: "production",
   resolve: {
     alias: {
-      src: path.resolve(__dirname, "src/")
+      src: path.resolve(import.meta.dirname, "src/")
     },
+    extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
     fallback: {
-      "url": require.resolve("url/")
+      "url": import.meta.resolve("url/")
     }
   },
   module: {
     rules: [
       {
-        loader: "babel-loader",
+        test: /\.tsx?$/,
         exclude: /node_modules/,
-        test: /\.(js|jsx)$/,
-        resolve: {
-          extensions: [".js", ".jsx"]
+        use: {
+          loader: "swc-loader",
+          options: getSwcOptions(true)
+        }
+      },
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "swc-loader",
+          options: getSwcOptions(false)
         }
       },
       {
@@ -67,7 +100,7 @@ const generalConfig = {
   }
 };
 
-module.exports = [
+export default [
   {
     ...generalConfig,
     output: getOutput("chrome", config.tempDirectory),
@@ -76,7 +109,7 @@ module.exports = [
       minimize: true
     },
     plugins: [
-      new CleanWebpackPlugin(["dist", "temp"]),
+      new CleanWebpackPlugin(),
       ...getMiniCssExtractPlugin(),
       ...getHTMLPlugins("chrome", config.tempDirectory, config.chromePath),
       ...getCopyPlugins("chrome", config.tempDirectory, config.chromePath),
@@ -92,7 +125,7 @@ module.exports = [
       minimize: true
     },
     plugins: [
-      new CleanWebpackPlugin(["dist", "temp"]),
+      new CleanWebpackPlugin(),
       ...getMiniCssExtractPlugin(),
       ...getHTMLPlugins("firefox", config.tempDirectory, config.firefoxPath),
       ...getFirefoxCopyPlugins("firefox", config.tempDirectory, config.firefoxPath),
@@ -102,19 +135,19 @@ module.exports = [
   },
   {
     ...generalConfig,
-    entry: { other: path.resolve(__dirname, `src/common/log.js`) },
+    entry: { other: path.resolve(import.meta.dirname, `src/common/log.js`) },
     output: getOutput("copiedSource", config.tempDirectory),
     plugins: [
       new CopyWebpackPlugin({
         patterns: [
           {
             from: `src`,
-            to: path.resolve(__dirname, `${config.tempDirectory}/copiedSource/src/`),
+            to: path.resolve(import.meta.dirname, `${config.tempDirectory}/copiedSource/src/`),
             info: { minimized: true },
           },
           {
             from: "*",
-            to: path.resolve(__dirname, `${config.tempDirectory}/copiedSource/`),
+            to: path.resolve(import.meta.dirname, `${config.tempDirectory}/copiedSource/`),
             globOptions: {
               ignore: ["**/BACKERS.md", "**/crowdin.yml"]
             }
